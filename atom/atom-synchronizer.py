@@ -4,6 +4,7 @@
 import argparse
 import re
 import os
+import shutil
 
 cliParser = argparse.ArgumentParser("""
 Backup/restore atom configurations to/form other machines.
@@ -22,10 +23,10 @@ cliParser.add_argument("-a",
                        """)
 cliParser.add_argument("-b",
                        "--backupDir",
-                       default='./',
+                       default='.',
                        help="""
                        The directory path for backup files
-                       defualt './'
+                       defualt '.'
                        """)
 cliParser.add_argument("-p",
                        "--packagelist",
@@ -67,21 +68,34 @@ def backup():
     # backup package list
     pkglistpath = args.packagelist
     if not os.path.isfile(pkglistpath):
-        pkglistpath = args.backupDir + args.packagelist
+        pkglistpath = args.backupDir + '/' + args.packagelist
     os.system("apm list > " + pkglistpath)
+    if os.path.isdir(args.atomDir):
+        for f in os.listdir(args.atomDir):
+            sfile = args.atomDir+'/'+f
+            if os.path.isfile(sfile):
+                shutil.copyfile(sfile, args.backupDir+'/' + f)
 
 
 # Restore configuration and packages
 def restore():
+    # restore configs
+    if os.path.isdir(args.atomDir):
+        for f in os.listdir(args.backupDir):
+            sfile = args.backupDir+'/'+f
+            if os.path.isfile(sfile):
+                shutil.copyfile(sfile, args.atomDir+'/' + f)
+    # restore packages
     pkglistpath = args.packagelist
     if not os.path.isfile(pkglistpath):
-        pkglistpath = args.backupDir + pkglistpath
+        pkglistpath = args.backupDir + '/' + pkglistpath
     if os.path.isfile(pkglistpath):
         packages = parsePackages(pkglistpath, args.keepVersion)
         for p in packages:
             os.system("apm install " + p)
     else:
         raise("package list file not found!")
+
 
 if __name__ == '__main__':
     if args.action == 'backup':
