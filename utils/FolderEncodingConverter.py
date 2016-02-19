@@ -1,9 +1,35 @@
 #!/usr/bin/python
 # coding=utf-8
+import fnmatch
 import os
+import chardet
 import argparse
-from encodingConverter import to_encoding
-from path import globPath
+
+
+def globPath(path, pattern):
+    result = []
+    for root, subdirs, files in os.walk(path):
+        for filename in files:
+            if fnmatch.fnmatch(filename, pattern):
+                result.append(os.path.join(root, filename))
+    return result
+
+
+def to_encoding(buf, encode, ignoreBelow=0.7):
+    '''
+    Convert encode the string buffer
+    '''
+    result = [buf, False]
+    try:
+        charInfo = chardet.detect(buf)
+        if (charInfo['confidence'] >= ignoreBelow):
+            result[0] = (buf.decode(charInfo['encoding'])).encode(encode)
+            result[1] = True
+        else:
+            raise Exception('Cannot convert encoding with small precision!')
+    except Exception as e:
+        print e.message
+    return result[0], result[1]
 
 
 def convert_files(indir, outdir, encode):
@@ -30,8 +56,8 @@ def convert_files(indir, outdir, encode):
     except Exception as e:
         print e.message
 
-
-cliParser = argparse.ArgumentParser("Convert all file under input directory's encoding")
+cliParser = argparse.ArgumentParser(
+    "Convert all file under input directory's encoding")
 cliParser.add_argument("-i",
                        "--input",
                        default=None,
