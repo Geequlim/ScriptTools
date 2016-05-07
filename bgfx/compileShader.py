@@ -1,5 +1,6 @@
+#!/usr/bin/python
 # Set it to shaderc absolute path
-shaderc = "/home/geequlim/Documents/Workspace/Develop/bgfx/tools/bin/linux/shaderc"
+shaderc = "/home/geequlim/Documents/Workspace/Develop/OpenSource/bgfx/.build/linux64_gcc/bin/shadercDebug"
 
 import os
 import sys
